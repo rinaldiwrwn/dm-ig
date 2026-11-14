@@ -144,3 +144,35 @@ test('sapaan default om', () => {
 test('contoh dari user: 3 barang', () => {
   assert.match(buildReply({ prices: [350, 200, 500], ongkirRupiah: 18000, sapaan: 'ka' }), /totalnya 350\+5\+200\+5\+500\+5\+18=1\.083k ya ka$/);
 });
+
+test('ongkir manual: angka pertama tanpa alamat', () => {
+  const p = parseInput('10, 350 200, ka');
+  assert.equal(p.manualOngkir, 10);
+  assert.deepEqual(p.prices, [350, 200]);
+  assert.equal(p.errors.length, 0);
+});
+
+test('ongkir manual: desimal pakai titik & kata "ongkir"', () => {
+  assert.equal(parseInput('18.5, 350').manualOngkir, 18.5);
+  const p = parseInput('350 200, ongkir 12, om');
+  assert.equal(p.manualOngkir, 12);
+  assert.deepEqual(p.prices, [350, 200]);
+});
+
+test('tanpa alamat & cuma satu bagian angka -> error', () => {
+  const p = parseInput('350 200, om');
+  assert.equal(p.manualOngkir, null);
+  assert.ok(p.errors.length > 0);
+});
+
+test('harga ribuan tetap benar', () => {
+  assert.deepEqual(parseInput('Tebet, 1.250').prices, [1250]);
+  assert.deepEqual(parseInput('15, 1.250').prices, [1250]);
+});
+
+test('end-to-end ongkir manual tanpa memanggil API', async () => {
+  const f = async () => { throw new Error('API tidak boleh dipanggil'); };
+  const r = await handleOngkir({ text: '10, 350 200, ka' }, {}, { fetchImpl: f });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 10rb dan biaya packingnya 5rb/item yaa ka, jadi totalnya 350+5+200+5+10=570rb ya ka');
+});
