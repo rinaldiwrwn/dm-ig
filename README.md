@@ -5,7 +5,7 @@ lalu keluar teks siap tempel seperti:
 
 > Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+18,5+5rb=373,5rb ya om
 
-Tarif diambil dari **RajaOngkir API (Komerce)** untuk kurir **JNE**, asal **Jakarta**.
+Tarif diambil dari **RajaOngkir API (Komerce)** untuk kurir **JNE**, asal **Kebayoran Lama, Jakarta Selatan**.
 
 ## Cara pakai
 
@@ -22,7 +22,7 @@ Aturan:
 - Harga ditulis dalam **ribuan** (`350` = 350rb, `1.250` = 1,25 juta).
 - Hasil < 1 juta ditulis `rb`, ≥ 1 juta ditulis `k` (contoh `1.250k`). Desimal pakai koma (`18,5rb`).
 - Packing 5rb × jumlah harga yang ditulis.
-- Kalau sapaan tidak ditulis, dipakai `ka`.
+- Kalau sapaan tidak ditulis, dipakai `om`.
 - Kalau nama kecamatan ada di beberapa kota, halaman akan menampilkan pilihan. Menambahkan nama kota
   (`Cibinong, Bogor`) biasanya langsung tepat.
 - Untuk tujuan Jabodetabek, JNE memakai kode layanan **CTC** (pengganti REG) dan **CTCYES** (pengganti YES); ini
@@ -39,7 +39,7 @@ Aturan:
 | `RAJAONGKIR_API_KEY` | ya | API key RajaOngkir |
 | `ACCESS_PIN` | disarankan | PIN supaya orang lain yang tahu link tidak menghabiskan kuota API |
 | `ORIGIN_ID` | tidak | ID lokasi asal di RajaOngkir. Kalau kosong, dicari otomatis dari `ORIGIN_SEARCH` |
-| `ORIGIN_SEARCH` | tidak | Kata kunci asal, default `gambir` (Jakarta Pusat). Ganti ke kecamatan tempat kirim |
+| `ORIGIN_SEARCH` | tidak | Kata kunci asal, default `kebayoran lama` (Jakarta Selatan) |
 
 4. Buka link Vercel-nya di HP, simpan ke Home Screen.
 

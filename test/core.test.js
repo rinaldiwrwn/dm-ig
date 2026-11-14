@@ -59,7 +59,7 @@ test('parse error tanpa harga', () => {
 
 // ---- mock RajaOngkir ----
 const DB = [
-  { id: 1, subdistrict_name: 'GAMBIR', district_name: 'GAMBIR', city_name: 'JAKARTA PUSAT', province_name: 'DKI JAKARTA', zip_code: '10110' },
+  { id: 1, subdistrict_name: 'KEBAYORAN LAMA UTARA', district_name: 'KEBAYORAN LAMA', city_name: 'JAKARTA SELATAN', province_name: 'DKI JAKARTA', zip_code: '12240' },
   { id: 10, subdistrict_name: 'TEBET BARAT', district_name: 'TEBET', city_name: 'JAKARTA SELATAN', province_name: 'DKI JAKARTA', zip_code: '12810' },
   { id: 11, subdistrict_name: 'TEBET TIMUR', district_name: 'TEBET', city_name: 'JAKARTA SELATAN', province_name: 'DKI JAKARTA', zip_code: '12820' },
   { id: 20, subdistrict_name: 'PAKANSARI', district_name: 'CIBINONG', city_name: 'BOGOR', province_name: 'JAWA BARAT', zip_code: '16915' },
@@ -135,4 +135,8 @@ test('end-to-end: tujuan tidak ditemukan & PIN', async () => {
   assert.equal(r.status, 404);
   const r2 = await handleOngkir({ text: 'Tebet, 350, om', pin: 'salah' }, { ...env, ACCESS_PIN: '1234' }, { fetchImpl: f });
   assert.equal(r2.status, 401);
+});
+
+test('sapaan default om', () => {
+  assert.equal(parseInput('Tebet, 350').sapaan, 'om');
 });
