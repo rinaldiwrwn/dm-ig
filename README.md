@@ -17,6 +17,8 @@ Ketik dipisah koma:
 | `Cibinong, Bogor, 350 200, ka` | 2 barang (350rb & 200rb), packing jadi 10rb |
 | `Medan, 1.250, om, 3kg, yes` | Berat 3 kg, layanan YES |
 | `Makassar, 500, ka, trucking, 10kg` | Layanan JNE Trucking (JTR) |
+| `10, 350 200, ka` | Ongkir sudah tahu (10rb), tanpa cek ke RajaOngkir |
+| `350, ongkir 12.5, om` | Sama, pakai kata `ongkir`; desimal pakai titik |
 
 Aturan:
 - Harga ditulis dalam **ribuan** (`350` = 350rb, `1.250` = 1,25 juta).

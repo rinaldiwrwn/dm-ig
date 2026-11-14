@@ -58,7 +58,8 @@
     <textarea id="text" placeholder="Tebet, 350, om" autocomplete="off"></textarea>
     <div class="hint">
       Format: <code>alamat/kecamatan, harga, om/ka</code> (tanpa sapaan = om). Opsional: <code>2kg</code>, <code>yes</code>, <code>trucking</code>.<br>
-      Lebih dari 1 barang: <code>Tebet, 350 200, ka</code> (harga dalam ribuan)
+      Lebih dari 1 barang: <code>Tebet, 350 200, ka</code> (harga dalam ribuan)<br>
+      Ongkir sudah tahu: <code>10, 350 200, ka</code> (angka pertama = ongkir)
     </div>
     <div class="row"><button id="go">Buat balasan</button></div>
     <div id="pinWrap" class="hidden" style="margin-top:10px">
@@ -127,7 +128,7 @@
       show(`<div class="reply" id="reply">${esc(data.reply)}</div>
         <div class="row"><button id="copyBtn">Salin</button></div>
         <div class="copied" id="copied"></div>
-        <div class="detail">${esc(d.tujuan || '')}<br>${esc(d.layanan)} · ${esc(d.berat)} · Rp${Number(d.ongkir).toLocaleString('id-ID')}${d.etd ? ' · estimasi ' + esc(d.etd) : ''}</div>`);
+        <div class="detail">${esc(d.tujuan || '')}<br>${esc(d.layanan)}${d.berat ? ' · ' + esc(d.berat) : ''} · Rp${Number(d.ongkir).toLocaleString('id-ID')}${d.etd ? ' · estimasi ' + esc(d.etd) : ''}</div>`);
       const doCopy = async () => { $('copied').textContent = (await copy(data.reply)) ? 'Tersalin ✓' : 'Gagal menyalin, salin manual ya.'; };
       $('copyBtn').addEventListener('click', doCopy);
       doCopy();
