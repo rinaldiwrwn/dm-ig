@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cek Ongkir Lelang</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --card: #ffffff; --text: #1d1d1b; --muted: #6b6a66;
+    --border: #e2e0da; --accent: #c0392b; --accent-text: #ffffff;
+    --ok: #1e7d4f; --err-bg: #fdecea; --err: #a32a1f; --chip: #f0eee9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141414; --card: #1f1f1e; --text: #ecebe8; --muted: #a09f9a;
+      --border: #34332f; --accent: #e0574a; --accent-text: #ffffff;
+      --ok: #4cc58a; --err-bg: #3a1d1a; --err: #ff9a8f; --chip: #2a2a28;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 1.25rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  textarea, input {
+    width: 100%; font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  }
+  textarea { min-height: 84px; resize: vertical; }
+  button {
+    font: inherit; border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer;
+    background: var(--accent); color: var(--accent-text); font-weight: 600; width: 100%;
+  }
+  button.secondary { background: var(--chip); color: var(--text); font-weight: 500; text-align: left; }
+  button:disabled { opacity: .6; }
+  .row { display: flex; gap: 8px; margin-top: 10px; }
+  .hint { color: var(--muted); font-size: .85rem; margin-top: 8px; }
+  .hint code { background: var(--chip); padding: 1px 5px; border-radius: 5px; }
+  .reply { white-space: pre-wrap; font-size: 1.02rem; }
+  .detail { color: var(--muted); font-size: .85rem; margin-top: 10px; }
+  .err { background: var(--err-bg); color: var(--err); border-color: transparent; }
+  .choices { display: grid; gap: 8px; margin-top: 10px; }
+  .copied { color: var(--ok); font-size: .9rem; margin-top: 8px; min-height: 1.3em; }
+  .hidden { display: none; }
+  label { font-size: .85rem; color: var(--muted); display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cek Ongkir JNE · Lelang</h1>
+  <p class="sub">Asal Jakarta · default 1 kg Reguler · packing 5rb/item</p>
+
+  <div class="card">
+    <textarea id="text" placeholder="Tebet, 350, om" autocomplete="off"></textarea>
+    <div class="hint">
+      Format: <code>alamat/kecamatan, harga, om/ka</code>. Opsional: <code>2kg</code>, <code>yes</code>, <code>trucking</code>.<br>
+      Lebih dari 1 barang: <code>Tebet, 350 200, ka</code> (harga dalam ribuan)
+    </div>
+    <div class="row"><button id="go">Buat balasan</button></div>
+    <div id="pinWrap" class="hidden" style="margin-top:10px">
+      <label for="pin">PIN akses</label>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="off">
+    </div>
+  </div>
+
+  <div id="out" class="card hidden"></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const out = $('out');
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  $('pin').value = store.get('pin') || '';
+  if ($('pin').value) $('pinWrap').classList.remove('hidden');
+
+  function show(html, isErr) {
+    out.className = 'card' + (isErr ? ' err' : '');
+    out.innerHTML = html;
+  }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
+    }
+  }
+
+  async function run(extra = {}) {
+    const text = $('text').value.trim();
+    if (!text) return;
+    const pin = $('pin').value.trim();
+    if (pin) store.set('pin', pin);
+    $('go').disabled = true;
+    show('Menghitung…');
+    try {
+      const res = await fetch('/api/ongkir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, pin, ...extra }),
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        $('pinWrap').classList.remove('hidden');
+        show(esc(data.error || 'PIN dibutuhkan.') + ' Isi PIN lalu coba lagi.', true);
+        return;
+      }
+      if (data.error) { show(esc(data.error), true); return; }
+      if (data.needChoice) {
+        show('<b>Nama kecamatan ini ada di beberapa tempat. Pilih yang benar:</b><div class="choices">' +
+          data.choices.map((c, i) => `<button class="secondary" data-i="${i}">${esc(c.label)}</button>`).join('') +
+          '</div>');
+        out.querySelectorAll('[data-i]').forEach((b) => b.addEventListener('click', () => {
+          const c = data.choices[+b.dataset.i];
+          run({ destinationId: c.id, destinationLabel: c.label });
+        }));
+        return;
+      }
+      const d = data.detail || {};
+      show(`<div class="reply" id="reply">${esc(data.reply)}</div>
+        <div class="row"><button id="copyBtn">Salin</button></div>
+        <div class="copied" id="copied"></div>
+        <div class="detail">${esc(d.tujuan || '')}<br>${esc(d.layanan)} · ${esc(d.berat)} · Rp${Number(d.ongkir).toLocaleString('id-ID')}${d.etd ? ' · estimasi ' + esc(d.etd) : ''}</div>`);
+      const doCopy = async () => { $('copied').textContent = (await copy(data.reply)) ? 'Tersalin ✓' : 'Gagal menyalin, salin manual ya.'; };
+      $('copyBtn').addEventListener('click', doCopy);
+      doCopy();
+    } catch (e) {
+      show('Tidak bisa terhubung ke server: ' + esc(e.message), true);
+    } finally {
+      $('go').disabled = false;
+    }
+  }
+
+  $('go').addEventListener('click', () => run());
+  $('text').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); run(); }
+  });
+</script>
+</body>
+</html>
