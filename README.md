@@ -4,6 +4,9 @@ Alat kecil untuk membalas DM Instagram lelang lebih cepat: ketik alamat/kecamata
 lalu keluar teks siap tempel seperti:
 
 > Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18,5=373,5rb ya om
+>
+> Transfernya kesini ya om:
+> 4980430176 a/n Rinaldi Wiriawan (BCA)
 
 Tarif diambil dari **RajaOngkir API (Komerce)** untuk kurir **JNE**, asal **Kebayoran Lama, Jakarta Selatan**.
 
@@ -17,7 +20,7 @@ Ketik dipisah koma:
 | `Cibinong, Bogor, 350 200, ka` | 2 barang (350rb & 200rb), packing jadi 10rb |
 | `Medan, 1.250, om, 3kg, yes` | Berat 3 kg, layanan YES |
 | `Makassar, 500, ka, trucking, 10kg` | Layanan JNE Trucking (JTR) |
-| `10, 350 200, ka` | Ongkir sudah tahu (10rb), tanpa cek ke RajaOngkir |
+| `10, 350 200, ka` | Ongkir sudah tahu (10rb), tanpa cek ke RajaOngkir → `Untuk totalnya jadi 350+5+200+5+10=570rb yaa kaa` + baris rekening transfer |
 | `350, ongkir 12.5, om` | Sama, pakai kata `ongkir`; desimal pakai titik |
 
 Aturan:
