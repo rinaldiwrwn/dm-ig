@@ -16,14 +16,14 @@ test('format rb / k', () => {
 test('template balasan 1 barang', () => {
   assert.equal(
     buildReply({ prices: [350], ongkirRupiah: 18000, sapaan: 'om' }),
-    'Untuk kesitu ongkirnya jadi 18rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18=373rb ya om'
+    'Untuk kesitu ongkirnya jadi 18rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18=373rb ya om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
   );
 });
 
 test('template balasan banyak barang + desimal + jutaan', () => {
   assert.equal(
     buildReply({ prices: [1000, 230], ongkirRupiah: 18500, sapaan: 'ka' }),
-    'Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa ka, jadi totalnya 1.000+5+230+5+18,5=1.258,5k ya ka'
+    'Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa kaa, jadi totalnya 1.000+5+230+5+18,5=1.258,5k ya kaa\n\nTransfernya kesini ya kaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
   );
 });
 
@@ -100,7 +100,7 @@ test('end-to-end: Tebet (Jabodetabek, CTC)', async () => {
   const f = mockFetch(JABO_COSTS);
   const r = await handleOngkir({ text: 'Tebet, 350, om' }, env, { fetchImpl: f });
   assert.equal(r.status, 200);
-  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 10rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+10=365rb ya om');
+  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 10rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+10=365rb ya om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
   const calc = f.calls.find((c) => c.url.includes('calculate'));
   const body = new URLSearchParams(calc.init.body.toString());
   assert.equal(body.get('origin'), '1');
@@ -124,7 +124,7 @@ test('end-to-end: kota di alamat membedakan otomatis + YES', async () => {
   const f = mockFetch(LUAR_COSTS);
   const r = await handleOngkir({ text: 'Cibinong, Bogor, 350 200, ka, yes, 3kg' }, env, { fetchImpl: f });
   assert.equal(r.status, 200);
-  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 32rb dan biaya packingnya 5rb/item yaa ka, jadi totalnya 350+5+200+5+32=592rb ya ka');
+  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 32rb dan biaya packingnya 5rb/item yaa kaa, jadi totalnya 350+5+200+5+32=592rb ya kaa\n\nTransfernya kesini ya kaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
   assert.match(r.json.detail.tujuan, /BOGOR/);
 });
 
@@ -142,7 +142,7 @@ test('sapaan default om', () => {
 });
 
 test('contoh dari user: 3 barang', () => {
-  assert.match(buildReply({ prices: [350, 200, 500], ongkirRupiah: 18000, sapaan: 'ka' }), /totalnya 350\+5\+200\+5\+500\+5\+18=1\.083k ya ka$/);
+  assert.match(buildReply({ prices: [350, 200, 500], ongkirRupiah: 18000, sapaan: 'ka' }), /totalnya 350\+5\+200\+5\+500\+5\+18=1\.083k ya kaa\n/);
 });
 
 test('ongkir manual: angka pertama tanpa alamat', () => {
