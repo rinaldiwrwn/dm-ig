@@ -174,10 +174,10 @@ test('end-to-end ongkir manual tanpa memanggil API', async () => {
   const f = async () => { throw new Error('API tidak boleh dipanggil'); };
   const r = await handleOngkir({ text: '10, 350 200, ka' }, {}, { fetchImpl: f });
   assert.equal(r.status, 200);
-  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+200+5+10=570rb yaa ka');
+  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+200+5+10=570rb yaa kaa\n\nTransfernya kesini ya kaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
 
 test('ongkir manual: sapaan default om', async () => {
   const r = await handleOngkir({ text: '23, 350' }, {}, { fetchImpl: async () => { throw new Error('x'); } });
-  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om');
+  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
