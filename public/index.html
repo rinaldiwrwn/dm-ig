@@ -46,6 +46,7 @@
   .choices { display: grid; gap: 8px; margin-top: 10px; }
   .copied { color: var(--ok); font-size: .9rem; margin-top: 8px; min-height: 1.3em; }
   .hidden { display: none; }
+  .notice { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--chip); font-size: .9rem; border-left: 4px solid #d99a00; }
   label { font-size: .85rem; color: var(--muted); display: block; margin-bottom: 4px; }
 </style>
 </head>
@@ -57,13 +58,14 @@
   <div class="card">
     <textarea id="text" placeholder="Tebet, 350, om" autocomplete="off"></textarea>
     <div class="hint">
-      Format: <code>alamat/kecamatan, harga, om/ka</code> (tanpa sapaan = om). Opsional: <code>2kg</code>, <code>yes</code>, <code>trucking</code>.<br>
+      Format: <code>alamat/kecamatan, harga, om/ka/kata sapaan</code> (tanpa sapaan = om). Sapaan sendiri ditulis persis seperti yang diketik: <code>Tebet, 350, Mann</code> menjadi <b>Mann</b>, <code>..., mann</code> menjadi <b>mann</b>. Opsional: <code>2kg</code>, <code>yes</code>, <code>trucking</code>.<br>
       Lebih dari 1 barang: <code>Tebet, 350 200, ka</code> (harga dalam ribuan)<br>
       Ongkir sudah tahu: <code>10, 350 200, ka</code> (angka pertama = ongkir)
     </div>
     <div style="margin-top:10px">
       <label for="user">Username Instagram (opsional, untuk menyimpan ke Lelang Monitor)</label>
       <input id="user" placeholder="@budi.watch" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div id="userNote" class="notice hidden"></div>
     </div>
     <div class="row"><button id="go">Buat balasan</button></div>
     <div id="pinWrap" class="hidden" style="margin-top:10px">
@@ -98,9 +100,33 @@
     }
   }
 
+  // Mengingatkan kalau username sudah ada di database pemenang lama (Pelanggan lama) di Lelang Monitor.
+  async function cekUser() {
+    const u = $('user').value.trim();
+    const note = $('userNote');
+    if (!u) { note.classList.add('hidden'); return; }
+    try {
+      const res = await fetch('/api/pelanggan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cek: true, username: u, pin: $('pin').value.trim() }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (j.exists && j.customer) {
+        const g = j.customer.greeting === 'ka' ? 'kaa' : j.customer.greeting;
+        note.textContent = '⚠ @' + j.username + ' sudah ada di database pemenang lama: ongkir ' + String(j.customer.ongkir).replace('.', ',') + 'rb, sapaan ' + g + '. Kalau kamu simpan dengan data baru, kamu akan ditanya dulu sebelum menimpa.';
+        note.classList.remove('hidden');
+      } else {
+        note.classList.add('hidden');
+      }
+    } catch { note.classList.add('hidden'); }
+  }
+  $('user').addEventListener('blur', cekUser);
+
   async function run(extra = {}) {
     const text = $('text').value.trim();
     if (!text) return;
+    cekUser(); // pengingat username yang sudah ada, berjalan bersamaan dengan perhitungan
     const pin = $('pin').value.trim();
     if (pin) store.set('pin', pin);
     $('go').disabled = true;
@@ -133,7 +159,7 @@
         <div class="row"><button id="copyBtn">Salin</button></div>
         <div class="copied" id="copied"></div>
         ${$('user').value.trim() ? '<div class="row"><button id="saveBtn" class="secondary">Simpan @' + esc($('user').value.trim().replace(/^@/, '')) + ' ke Lelang Monitor</button></div><div class="copied" id="saved"></div>' : ''}
-        <div class="detail">${esc(d.tujuan || '')}<br>${esc(d.layanan)}${d.berat ? ' · ' + esc(d.berat) : ''} · Rp${Number(d.ongkir).toLocaleString('id-ID')}${d.etd ? ' · estimasi ' + esc(d.etd) : ''}</div>`);
+        <div class="detail">${esc(d.tujuan || '')}<br>Sapaan: ${esc(d.sapaan === 'ka' ? 'kaa' : d.sapaan)}<br>${esc(d.layanan)}${d.berat ? ' · ' + esc(d.berat) : ''} · Rp${Number(d.ongkir).toLocaleString('id-ID')}${d.etd ? ' · estimasi ' + esc(d.etd) : ''}</div>`);
       const doCopy = async () => { $('copied').textContent = (await copy(data.reply)) ? 'Tersalin ✓' : 'Gagal menyalin, salin manual ya.'; };
       $('copyBtn').addEventListener('click', doCopy);
       doCopy();

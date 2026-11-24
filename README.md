@@ -27,7 +27,7 @@ Aturan:
 - Harga ditulis dalam **ribuan** (`350` = 350rb, `1.250` = 1,25 juta).
 - Hasil < 1 juta ditulis `rb`, ≥ 1 juta ditulis `k` (contoh `1.250k`). Desimal pakai koma (`18,5rb`).
 - Packing 5rb × jumlah harga yang ditulis.
-- Kalau sapaan tidak ditulis, dipakai `om`.
+- Sapaan: `om` atau `ka` (ditulis `kaa`), atau **sapaan bebas**: satu kata di paling akhir, setelah bagian harga/berat/layanan, mis. `Tebet, 350, Mann` atau `10, 350 200, nangg`. Sapaan bebas ditulis **persis seperti yang diketik** (huruf besar kecilnya ikut): `Mann` tetap `Mann`, `mann` tetap `mann`, `NANGG` tetap `NANGG`. Alamat di akhir (mis. `350, Tebet`) tidak ikut terbaca sebagai sapaan. Tanpa sapaan dipakai `om`.
 - Kalau nama kecamatan ada di beberapa kota, halaman akan menampilkan pilihan. Menambahkan nama kota
   (`Cibinong, Bogor`) biasanya langsung tepat.
 - Untuk tujuan Jabodetabek, JNE memakai kode layanan **CTC** (pengganti REG) dan **CTCYES** (pengganti YES); ini
@@ -66,6 +66,8 @@ Setelah ongkir dihitung, pelanggan bisa langsung disimpan ke dashboard Lelang Mo
    ke browser, dan memakai PIN yang sama dengan pengecekan ongkir.
 
 Ongkir desimal tetap bekerja: `18.5` menjadi 18,5rb di dashboard.
+
+Saat username diisi, webapp mengecek ke dashboard apakah akun itu **sudah ada di database pemenang lama** dan mengingatkannya (dengan ongkir dan sapaan yang tersimpan) sebelum kamu menyimpan.
 
 Kalau akun itu **sudah ada** di dashboard, datanya tidak ditimpa diam-diam: muncul pertanyaan dengan data lama dan data baru, dan kamu memilih *Timpa data lama* atau *Batal, biarkan data lama*.
 

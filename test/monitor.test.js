@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { saveCustomer } from '../lib/monitor.js';
+import { saveCustomer, lookupCustomer, handlePelanggan } from '../lib/monitor.js';
 
 const env = { MONITOR_URL: 'https://monitor.example.app', MONITOR_TOKEN: 'rahasia', ACCESS_PIN: '123456' };
 const okFetch = (calls) => async (url, init) => {
@@ -18,9 +18,9 @@ test('menyimpan pelanggan: username dirapikan, ongkir rupiah jadi ribuan, token 
   assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'budi.watch', ongkir: 18.5, greeting: 'ka', overwrite: false });
 });
 
-test('sapaan selain ka menjadi om, dan ongkir bulat tetap bulat', async () => {
+test('tanpa sapaan menjadi om, dan ongkir bulat tetap bulat', async () => {
   const calls = [];
-  await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'kak', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
+  await saveCustomer({ username: 'x', ongkir: 10000, pin: '123456' }, env, { fetchImpl: okFetch(calls) });
   assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'x', ongkir: 10, greeting: 'om', overwrite: false });
 });
 
@@ -86,4 +86,48 @@ test('timpa: true mengizinkan dashboard menimpa', async () => {
   const calls = [];
   await saveCustomer({ username: 'x', ongkir: 18500, sapaan: 'ka', pin: '123456', timpa: true }, env, { fetchImpl: okFetch(calls) });
   assert.equal(JSON.parse(calls[0].init.body).overwrite, true);
+});
+
+test('sapaan bebas diteruskan apa adanya setelah dirapikan; kosong menjadi om', async () => {
+  const calls = [];
+  for (const sapaan of ['Mann', '  bro   besar ', 'ka', '', undefined, 'x'.repeat(40)]) {
+    await saveCustomer({ username: 'x', ongkir: 10000, sapaan, pin: '123456' }, env, { fetchImpl: okFetch(calls) });
+  }
+  assert.deepEqual(calls.map((c) => JSON.parse(c.init.body).greeting), ['Mann', 'bro besar', 'ka', 'om', 'om', 'x'.repeat(20)]);
+});
+
+test('cek username: ada di database pemenang lama, tidak ada, belum terhubung, dan gangguan tidak jadi error', async () => {
+  const calls = [];
+  const have = async (url, init) => {
+    calls.push({ url: String(url), auth: init?.headers?.Authorization });
+    return { ok: true, status: 200, json: async () => ({ exists: true, customer: { ongkir: 10, greeting: 'Mann' } }) };
+  };
+  const r = await lookupCustomer({ username: ' @Budi.Watch ', pin: '123456' }, env, { fetchImpl: have });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.json, { exists: true, username: 'budi.watch', customer: { ongkir: 10, greeting: 'Mann' } });
+  assert.equal(calls[0].url, 'https://monitor.example.app/api/customer?username=budi.watch');
+  assert.equal(calls[0].auth, 'Bearer rahasia');
+
+  const none = async () => ({ ok: true, status: 200, json: async () => ({ exists: false, customer: null }) });
+  assert.equal((await lookupCustomer({ username: 'x', pin: '123456' }, env, { fetchImpl: none })).json.exists, false);
+
+  assert.deepEqual((await lookupCustomer({ username: 'x', pin: '123456' }, {}, { fetchImpl: none })).json, { unavailable: true });
+  const down = async () => { throw new Error('ECONNREFUSED'); };
+  assert.deepEqual((await lookupCustomer({ username: 'x', pin: '123456' }, env, { fetchImpl: down })).json, { unavailable: true });
+  const refused = async () => ({ ok: false, status: 401, json: async () => ({}) });
+  assert.deepEqual((await lookupCustomer({ username: 'x', pin: '123456' }, env, { fetchImpl: refused })).json, { unavailable: true });
+
+  assert.equal((await lookupCustomer({ username: 'x', pin: 'salah' }, env, { fetchImpl: none })).status, 401);
+  assert.equal((await lookupCustomer({ username: 'a b', pin: '123456' }, env, { fetchImpl: none })).status, 400);
+});
+
+test('handlePelanggan: cek:true hanya mengecek, selain itu menyimpan', async () => {
+  const urls = [];
+  const f = async (url, init) => {
+    urls.push((init?.method || 'GET') + ' ' + new URL(url).pathname);
+    return { ok: true, status: 200, json: async () => ({ exists: false, ok: true }) };
+  };
+  await handlePelanggan({ cek: true, username: 'x', pin: '123456' }, env, { fetchImpl: f });
+  await handlePelanggan({ username: 'x', ongkir: 1000, pin: '123456' }, env, { fetchImpl: f });
+  assert.deepEqual(urls, ['GET /api/customer', 'POST /api/customer']);
 });

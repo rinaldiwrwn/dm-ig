@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { handleOngkir } from './lib/handler.js';
-import { saveCustomer } from './lib/monitor.js';
+import { handlePelanggan } from './lib/monitor.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -33,7 +33,7 @@ const server = http.createServer(async (req, res) => {
     } catch {
       /* body kosong */
     }
-    const { status, json } = await saveCustomer(body, process.env);
+    const { status, json } = await handlePelanggan(body, process.env);
     res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(json));
     return;
