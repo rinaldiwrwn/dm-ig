@@ -182,12 +182,19 @@ test('ongkir manual: sapaan default om', async () => {
   assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
 
-test('sapaan mann: dikenali dari input dan ditulis apa adanya', () => {
-  const p = parseInput('Tebet, 350, mann');
-  assert.equal(p.sapaan, 'mann');
+test('sapaan bebas: "sapaan X" ditulis apa adanya di balasan', () => {
+  const p = parseInput('Tebet, 350, sapaan Mann');
+  assert.equal(p.sapaan, 'Mann');
+  assert.deepEqual(p.address, ['Tebet']);
   assert.equal(p.errors.length, 0);
+  assert.equal(parseInput('10, 350, sapaan: bro besar').sapaan, 'bro besar');
+  assert.equal(parseInput('10, 350, sapaan kak').sapaan, 'ka'); // alias lama tetap berarti kaa
+  assert.equal(parseInput('10, 350, ka').sapaan, 'ka');
+  assert.equal(parseInput('10, 350').sapaan, 'om');
+  assert.ok(parseInput('10, 350, sapaan <b>x</b>').errors.some((e) => /Sapaan tidak valid/.test(e)));
+  assert.ok(parseInput('10, 350, sapaan ' + 'a'.repeat(21)).errors.some((e) => /Sapaan tidak valid/.test(e)));
   assert.equal(
-    buildReply({ prices: [350], ongkirRupiah: 10000, sapaan: 'mann', manual: true }),
-    'Untuk totalnya jadi 350+5+10=365rb yaa mann\n\nTransfernya kesini ya mann:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
+    buildReply({ prices: [350], ongkirRupiah: 10000, sapaan: 'Mann', manual: true }),
+    'Untuk totalnya jadi 350+5+10=365rb yaa Mann\n\nTransfernya kesini ya Mann:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
   );
 });

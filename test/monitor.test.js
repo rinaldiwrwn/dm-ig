@@ -18,9 +18,9 @@ test('menyimpan pelanggan: username dirapikan, ongkir rupiah jadi ribuan, token 
   assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'budi.watch', ongkir: 18.5, greeting: 'ka', overwrite: false });
 });
 
-test('sapaan selain ka menjadi om, dan ongkir bulat tetap bulat', async () => {
+test('tanpa sapaan menjadi om, dan ongkir bulat tetap bulat', async () => {
   const calls = [];
-  await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'kak', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
+  await saveCustomer({ username: 'x', ongkir: 10000, pin: '123456' }, env, { fetchImpl: okFetch(calls) });
   assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'x', ongkir: 10, greeting: 'om', overwrite: false });
 });
 
@@ -88,10 +88,10 @@ test('timpa: true mengizinkan dashboard menimpa', async () => {
   assert.equal(JSON.parse(calls[0].init.body).overwrite, true);
 });
 
-test('sapaan mann diteruskan ke dashboard, sapaan tak dikenal menjadi om', async () => {
+test('sapaan bebas diteruskan apa adanya setelah dirapikan; kosong menjadi om', async () => {
   const calls = [];
-  await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'mann', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
-  await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'bro', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
-  assert.equal(JSON.parse(calls[0].init.body).greeting, 'mann');
-  assert.equal(JSON.parse(calls[1].init.body).greeting, 'om');
+  for (const sapaan of ['Mann', '  bro   besar ', 'ka', '', undefined, 'x'.repeat(40)]) {
+    await saveCustomer({ username: 'x', ongkir: 10000, sapaan, pin: '123456' }, env, { fetchImpl: okFetch(calls) });
+  }
+  assert.deepEqual(calls.map((c) => JSON.parse(c.init.body).greeting), ['Mann', 'bro besar', 'ka', 'om', 'om', 'x'.repeat(20)]);
 });
