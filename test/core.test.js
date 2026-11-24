@@ -16,14 +16,14 @@ test('format rb / k', () => {
 test('template balasan 1 barang', () => {
   assert.equal(
     buildReply({ prices: [350], ongkirRupiah: 18000, sapaan: 'om' }),
-    'Untuk kesitu ongkirnya jadi 18rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18=373rb ya om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
+    'Untuk kesitu ongkirnya jadi 18rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18=373rb om\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
   );
 });
 
 test('template balasan banyak barang + desimal + jutaan', () => {
   assert.equal(
     buildReply({ prices: [1000, 230], ongkirRupiah: 18500, sapaan: 'ka' }),
-    'Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa kaa, jadi totalnya 1.000+5+230+5+18,5=1.258,5k ya kaa\n\nTransfernya kesini ya kaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
+    'Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa kaa, jadi totalnya 1.000+5+230+5+18,5=1.258,5k kaa\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
   );
 });
 
@@ -100,7 +100,7 @@ test('end-to-end: Tebet (Jabodetabek, CTC)', async () => {
   const f = mockFetch(JABO_COSTS);
   const r = await handleOngkir({ text: 'Tebet, 350, om' }, env, { fetchImpl: f });
   assert.equal(r.status, 200);
-  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 10rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+10=365rb ya om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
+  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 10rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+10=365rb om\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
   const calc = f.calls.find((c) => c.url.includes('calculate'));
   const body = new URLSearchParams(calc.init.body.toString());
   assert.equal(body.get('origin'), '1');
@@ -124,7 +124,7 @@ test('end-to-end: kota di alamat membedakan otomatis + YES', async () => {
   const f = mockFetch(LUAR_COSTS);
   const r = await handleOngkir({ text: 'Cibinong, Bogor, 350 200, ka, yes, 3kg' }, env, { fetchImpl: f });
   assert.equal(r.status, 200);
-  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 32rb dan biaya packingnya 5rb/item yaa kaa, jadi totalnya 350+5+200+5+32=592rb ya kaa\n\nTransfernya kesini ya kaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
+  assert.equal(r.json.reply, 'Untuk kesitu ongkirnya jadi 32rb dan biaya packingnya 5rb/item yaa kaa, jadi totalnya 350+5+200+5+32=592rb kaa\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
   assert.match(r.json.detail.tujuan, /BOGOR/);
 });
 
@@ -142,7 +142,7 @@ test('sapaan default om', () => {
 });
 
 test('contoh dari user: 3 barang', () => {
-  assert.match(buildReply({ prices: [350, 200, 500], ongkirRupiah: 18000, sapaan: 'ka' }), /totalnya 350\+5\+200\+5\+500\+5\+18=1\.083k ya kaa\n/);
+  assert.match(buildReply({ prices: [350, 200, 500], ongkirRupiah: 18000, sapaan: 'ka' }), /totalnya 350\+5\+200\+5\+500\+5\+18=1\.083k kaa\n/);
 });
 
 test('ongkir manual: angka pertama tanpa alamat', () => {
@@ -174,12 +174,12 @@ test('end-to-end ongkir manual tanpa memanggil API', async () => {
   const f = async () => { throw new Error('API tidak boleh dipanggil'); };
   const r = await handleOngkir({ text: '10, 350 200, ka' }, {}, { fetchImpl: f });
   assert.equal(r.status, 200);
-  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+200+5+10=570rb yaa kaa\n\nTransfernya kesini ya kaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
+  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+200+5+10=570rb yaa kaa\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
 
 test('ongkir manual: sapaan default om', async () => {
   const r = await handleOngkir({ text: '23, 350' }, {}, { fetchImpl: async () => { throw new Error('x'); } });
-  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
+  assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
 
 test('sapaan bebas: kata terakhir setelah harga/berat/layanan, ditulis persis seperti diketik', () => {
@@ -213,6 +213,6 @@ test('sapaan bebas: kata terakhir setelah harga/berat/layanan, ditulis persis se
   assert.equal(parseInput('Tebet, 350, a1b').sapaan, 'om');
   assert.equal(
     buildReply({ prices: [350], ongkirRupiah: 10000, sapaan: 'Mann', manual: true }),
-    'Untuk totalnya jadi 350+5+10=365rb yaa Mann\n\nTransfernya kesini ya Mann:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
+    'Untuk totalnya jadi 350+5+10=365rb yaa Mann\n\nTransfernya kesini yaa:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
   );
 });

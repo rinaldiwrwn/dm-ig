@@ -3,9 +3,9 @@
 Alat kecil untuk membalas DM Instagram lelang lebih cepat: ketik alamat/kecamatan, harga, dan sapaan,
 lalu keluar teks siap tempel seperti:
 
-> Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18,5=373,5rb ya om
+> Untuk kesitu ongkirnya jadi 18,5rb dan biaya packingnya 5rb/item yaa om, jadi totalnya 350+5+18,5=373,5rb om
 >
-> Transfernya kesini ya om:
+> Transfernya kesini yaa:
 > 4980430176 a/n Rinaldi Wiriawan (BCA)
 
 Tarif diambil dari **RajaOngkir API (Komerce)** untuk kurir **JNE**, asal **Kebayoran Lama, Jakarta Selatan**.
