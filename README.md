@@ -27,7 +27,7 @@ Aturan:
 - Harga ditulis dalam **ribuan** (`350` = 350rb, `1.250` = 1,25 juta).
 - Hasil < 1 juta ditulis `rb`, ≥ 1 juta ditulis `k` (contoh `1.250k`). Desimal pakai koma (`18,5rb`).
 - Packing 5rb × jumlah harga yang ditulis.
-- Kalau sapaan tidak ditulis, dipakai `om`.
+- Sapaan yang dikenal: `om`, `ka` (ditulis `kaa`), dan `mann`. Kalau tidak ditulis, dipakai `om`.
 - Kalau nama kecamatan ada di beberapa kota, halaman akan menampilkan pilihan. Menambahkan nama kota
   (`Cibinong, Bogor`) biasanya langsung tepat.
 - Untuk tujuan Jabodetabek, JNE memakai kode layanan **CTC** (pengganti REG) dan **CTCYES** (pengganti YES); ini

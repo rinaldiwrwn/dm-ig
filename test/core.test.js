@@ -181,3 +181,13 @@ test('ongkir manual: sapaan default om', async () => {
   const r = await handleOngkir({ text: '23, 350' }, {}, { fetchImpl: async () => { throw new Error('x'); } });
   assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
+
+test('sapaan mann: dikenali dari input dan ditulis apa adanya', () => {
+  const p = parseInput('Tebet, 350, mann');
+  assert.equal(p.sapaan, 'mann');
+  assert.equal(p.errors.length, 0);
+  assert.equal(
+    buildReply({ prices: [350], ongkirRupiah: 10000, sapaan: 'mann', manual: true }),
+    'Untuk totalnya jadi 350+5+10=365rb yaa mann\n\nTransfernya kesini ya mann:\n4980430176 a/n Rinaldi Wiriawan (BCA)'
+  );
+});

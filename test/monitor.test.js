@@ -87,3 +87,11 @@ test('timpa: true mengizinkan dashboard menimpa', async () => {
   await saveCustomer({ username: 'x', ongkir: 18500, sapaan: 'ka', pin: '123456', timpa: true }, env, { fetchImpl: okFetch(calls) });
   assert.equal(JSON.parse(calls[0].init.body).overwrite, true);
 });
+
+test('sapaan mann diteruskan ke dashboard, sapaan tak dikenal menjadi om', async () => {
+  const calls = [];
+  await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'mann', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
+  await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'bro', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
+  assert.equal(JSON.parse(calls[0].init.body).greeting, 'mann');
+  assert.equal(JSON.parse(calls[1].init.body).greeting, 'om');
+});
