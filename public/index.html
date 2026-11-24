@@ -138,26 +138,48 @@
       $('copyBtn').addEventListener('click', doCopy);
       doCopy();
       if ($('saveBtn')) {
-        $('saveBtn').addEventListener('click', async () => {
+        const fmt = (n) => String(n).replace('.', ',');
+        const say = (text, buttons = []) => {
+          const el = $('saved');
+          el.textContent = text;
+          for (const [label, fn] of buttons) {
+            const b = document.createElement('button');
+            b.className = 'secondary';
+            b.style.marginTop = '8px';
+            b.textContent = label;
+            b.addEventListener('click', fn);
+            el.appendChild(b);
+          }
+        };
+        const save = async (timpa) => {
           $('saveBtn').disabled = true;
-          $('saved').textContent = 'Menyimpan…';
+          say('Menyimpan…');
           try {
             const r = await fetch('/api/pelanggan', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: $('user').value, ongkir: d.ongkir, sapaan: d.sapaan, pin: $('pin').value.trim() }),
+              body: JSON.stringify({ username: $('user').value, ongkir: d.ongkir, sapaan: d.sapaan, pin: $('pin').value.trim(), timpa }),
             });
             const j = await r.json().catch(() => ({}));
-            const fmt = (n) => String(n).replace('.', ',');
-            $('saved').textContent = !r.ok ? (j.error || 'Gagal menyimpan.')
-              : j.updated ? 'Diperbarui ✓ ' + j.username + ': ongkir ' + fmt(j.previous.ongkir) + 'rb → ' + fmt(j.ongkir) + 'rb, sapaan ' + j.previous.greeting + ' → ' + j.sapaan + ' (data lama ditimpa)'
-              : 'Tersimpan di Lelang Monitor ✓ (' + j.username + ', ongkir ' + fmt(j.ongkir) + 'rb, ' + j.sapaan + ')';
+            if (r.status === 409 && j.exists) {
+              // Akunnya sudah ada di dashboard: tanya dulu, jangan menimpa diam-diam.
+              say('@' + j.username + ' sudah ada di Lelang Monitor (ongkir ' + fmt(j.previous.ongkir) + 'rb, sapaan ' + j.previous.greeting + '). Timpa dengan ongkir ' + fmt(j.ongkir) + 'rb, sapaan ' + j.sapaan + '?', [
+                ['Timpa data lama', () => save(true)],
+                ['Batal, biarkan data lama', () => say('Dibatalkan. Data lama di Lelang Monitor tidak diubah.')],
+              ]);
+              return;
+            }
+            if (!r.ok) return say(j.error || 'Gagal menyimpan.');
+            say(j.updated
+              ? 'Diperbarui ✓ ' + j.username + ': ongkir ' + fmt(j.previous.ongkir) + 'rb → ' + fmt(j.ongkir) + 'rb, sapaan ' + j.previous.greeting + ' → ' + j.sapaan
+              : 'Tersimpan di Lelang Monitor ✓ (' + j.username + ', ongkir ' + fmt(j.ongkir) + 'rb, ' + j.sapaan + ')');
           } catch (e) {
-            $('saved').textContent = 'Tidak bisa terhubung ke server: ' + e.message;
+            say('Tidak bisa terhubung ke server: ' + e.message);
           } finally {
             $('saveBtn').disabled = false;
           }
-        });
+        };
+        $('saveBtn').addEventListener('click', () => save(false));
       }
     } catch (e) {
       show('Tidak bisa terhubung ke server: ' + esc(e.message), true);

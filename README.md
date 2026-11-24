@@ -67,6 +67,8 @@ Setelah ongkir dihitung, pelanggan bisa langsung disimpan ke dashboard Lelang Mo
 
 Ongkir desimal tetap bekerja: `18.5` menjadi 18,5rb di dashboard.
 
+Kalau akun itu **sudah ada** di dashboard, datanya tidak ditimpa diam-diam: muncul pertanyaan dengan data lama dan data baru, dan kamu memilih *Timpa data lama* atau *Batal, biarkan data lama*.
+
 ### Jalan di komputer sendiri
 
 ```bash
