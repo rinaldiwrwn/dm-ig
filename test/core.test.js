@@ -182,17 +182,35 @@ test('ongkir manual: sapaan default om', async () => {
   assert.equal(r.json.reply, 'Untuk totalnya jadi 350+5+23=378rb yaa om\n\nTransfernya kesini ya om:\n4980430176 a/n Rinaldi Wiriawan (BCA)');
 });
 
-test('sapaan bebas: "sapaan X" ditulis apa adanya di balasan', () => {
-  const p = parseInput('Tebet, 350, sapaan Mann');
-  assert.equal(p.sapaan, 'Mann');
-  assert.deepEqual(p.address, ['Tebet']);
-  assert.equal(p.errors.length, 0);
-  assert.equal(parseInput('10, 350, sapaan: bro besar').sapaan, 'bro besar');
-  assert.equal(parseInput('10, 350, sapaan kak').sapaan, 'ka'); // alias lama tetap berarti kaa
-  assert.equal(parseInput('10, 350, ka').sapaan, 'ka');
-  assert.equal(parseInput('10, 350').sapaan, 'om');
-  assert.ok(parseInput('10, 350, sapaan <b>x</b>').errors.some((e) => /Sapaan tidak valid/.test(e)));
-  assert.ok(parseInput('10, 350, sapaan ' + 'a'.repeat(21)).errors.some((e) => /Sapaan tidak valid/.test(e)));
+test('sapaan bebas: kata terakhir setelah harga/berat/layanan, ditulis persis seperti diketik', () => {
+  const s = (txt) => parseInput(txt).sapaan;
+  assert.equal(s('Tebet, 350, man'), 'man');
+  assert.equal(s('Tebet, 350, mann'), 'mann');
+  assert.equal(s('Tebet, 350, Mann'), 'Mann');
+  assert.equal(s('Tebet, 350, NANGG'), 'NANGG');
+  assert.equal(s('Tebet, 350, nAnGg'), 'nAnGg');
+  assert.equal(s('10, 350 200, Mann'), 'Mann'); // ongkir diketik: tanpa alamat
+  assert.equal(s('Tebet, 350, 2kg, bro'), 'bro'); // setelah berat
+  assert.equal(s('Cibinong, Bogor, 350, mann'), 'mann');
+  assert.deepEqual(parseInput('Cibinong, Bogor, 350, mann').address, ['Cibinong', 'Bogor']);
+  // om dan ka tetap seperti biasa, dan menang atas kata terakhir
+  assert.equal(s('Tebet, 350, om'), 'om');
+  assert.equal(s('Tebet, 350, ka'), 'ka');
+  assert.equal(s('Tebet, 350, kakak'), 'ka');
+  assert.equal(s('Tebet, 350, ka, bro'), 'ka');
+  assert.equal(s('Tebet, 350'), 'om');
+  // alamat di akhir tidak ikut terbaca sebagai sapaan
+  const addrLast = parseInput('350, Tebet');
+  assert.equal(addrLast.sapaan, 'om');
+  assert.deepEqual(addrLast.address, ['Tebet']);
+  assert.equal(parseInput('350, Cibinong, Bogor').sapaan, 'om'); // bagian sebelum "Bogor" bukan harga
+  // layanan dan kata kunci yang dikenal bukan sapaan
+  assert.equal(s('Tebet, 350, yes'), 'om');
+  assert.equal(parseInput('Tebet, 350, yes').service, 'yes');
+  // satu kata saja, huruf saja
+  assert.equal(parseInput('Tebet, 350, bro besar').sapaan, 'om');
+  assert.equal(parseInput('Tebet, 350, b').sapaan, 'om');
+  assert.equal(parseInput('Tebet, 350, a1b').sapaan, 'om');
   assert.equal(
     buildReply({ prices: [350], ongkirRupiah: 10000, sapaan: 'Mann', manual: true }),
     'Untuk totalnya jadi 350+5+10=365rb yaa Mann\n\nTransfernya kesini ya Mann:\n4980430176 a/n Rinaldi Wiriawan (BCA)'

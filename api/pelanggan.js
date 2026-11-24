@@ -1,5 +1,5 @@
 // Serverless function untuk Vercel: POST /api/pelanggan
-import { saveCustomer } from '../lib/monitor.js';
+import { handlePelanggan } from '../lib/monitor.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -14,6 +14,6 @@ export default async function handler(req, res) {
       body = {};
     }
   }
-  const { status, json } = await saveCustomer(body || {}, process.env);
+  const { status, json } = await handlePelanggan(body || {}, process.env);
   res.status(status).json(json);
 }
