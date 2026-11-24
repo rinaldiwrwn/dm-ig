@@ -12,16 +12,16 @@ test('menyimpan pelanggan: username dirapikan, ongkir rupiah jadi ribuan, token 
   const calls = [];
   const r = await saveCustomer({ username: ' @Budi.Watch ', ongkir: 18500, sapaan: 'ka', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
   assert.equal(r.status, 200);
-  assert.deepEqual(r.json, { ok: true, username: 'budi.watch', ongkir: 18.5, sapaan: 'ka' });
+  assert.deepEqual(r.json, { ok: true, username: 'budi.watch', ongkir: 18.5, sapaan: 'ka', updated: false, previous: null });
   assert.equal(calls[0].url, 'https://monitor.example.app/api/customer');
   assert.equal(calls[0].init.headers.Authorization, 'Bearer rahasia');
-  assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'budi.watch', ongkir: 18.5, greeting: 'ka' });
+  assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'budi.watch', ongkir: 18.5, greeting: 'ka', overwrite: false });
 });
 
 test('sapaan selain ka menjadi om, dan ongkir bulat tetap bulat', async () => {
   const calls = [];
   await saveCustomer({ username: 'x', ongkir: 10000, sapaan: 'kak', pin: '123456' }, env, { fetchImpl: okFetch(calls) });
-  assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'x', ongkir: 10, greeting: 'om' });
+  assert.deepEqual(JSON.parse(calls[0].init.body), { username: 'x', ongkir: 10, greeting: 'om', overwrite: false });
 });
 
 test('PIN salah ditolak sebelum menghubungi dashboard', async () => {
@@ -57,4 +57,33 @@ test('dashboard menolak token atau tidak terjangkau: error ramah', async () => {
   const r2 = await saveCustomer({ username: 'x', ongkir: 1000, pin: '123456' }, env, { fetchImpl: down });
   assert.equal(r2.status, 502);
   assert.match(r2.json.error, /ECONNREFUSED/);
+});
+
+test('akun yang sudah ada: data lama diteruskan ke tampilan', async () => {
+  const upd = async () => ({ ok: true, status: 200, json: async () => ({ ok: true, updated: true, previous: { ongkir: 10, greeting: 'om' } }) });
+  const r = await saveCustomer({ username: 'x', ongkir: 18500, sapaan: 'ka', pin: '123456' }, env, { fetchImpl: upd });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.updated, true);
+  assert.deepEqual(r.json.previous, { ongkir: 10, greeting: 'om' });
+  const fresh = await saveCustomer({ username: 'x', ongkir: 18500, pin: '123456' }, env, { fetchImpl: okFetch([]) });
+  assert.equal(fresh.json.updated, false);
+  assert.equal(fresh.json.previous, null);
+});
+
+test('bawaannya tidak menimpa; akun sudah ada menghasilkan 409 berisi data lama', async () => {
+  const calls = [];
+  const exists = async (url, init) => {
+    calls.push(JSON.parse(init.body));
+    return { ok: false, status: 409, json: async () => ({ error: 'Akun sudah ada di daftar.', exists: true, previous: { ongkir: 10, greeting: 'om' } }) };
+  };
+  const r = await saveCustomer({ username: '@X', ongkir: 18500, sapaan: 'ka', pin: '123456' }, env, { fetchImpl: exists });
+  assert.equal(r.status, 409);
+  assert.deepEqual(r.json, { exists: true, previous: { ongkir: 10, greeting: 'om' }, username: 'x', ongkir: 18.5, sapaan: 'ka' });
+  assert.equal(calls[0].overwrite, false);
+});
+
+test('timpa: true mengizinkan dashboard menimpa', async () => {
+  const calls = [];
+  await saveCustomer({ username: 'x', ongkir: 18500, sapaan: 'ka', pin: '123456', timpa: true }, env, { fetchImpl: okFetch(calls) });
+  assert.equal(JSON.parse(calls[0].init.body).overwrite, true);
 });
