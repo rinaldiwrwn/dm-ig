@@ -148,7 +148,10 @@
               body: JSON.stringify({ username: $('user').value, ongkir: d.ongkir, sapaan: d.sapaan, pin: $('pin').value.trim() }),
             });
             const j = await r.json().catch(() => ({}));
-            $('saved').textContent = r.ok ? 'Tersimpan di Lelang Monitor ✓ (' + j.username + ', ongkir ' + j.ongkir + 'rb, ' + j.sapaan + ')' : (j.error || 'Gagal menyimpan.');
+            const fmt = (n) => String(n).replace('.', ',');
+            $('saved').textContent = !r.ok ? (j.error || 'Gagal menyimpan.')
+              : j.updated ? 'Diperbarui ✓ ' + j.username + ': ongkir ' + fmt(j.previous.ongkir) + 'rb → ' + fmt(j.ongkir) + 'rb, sapaan ' + j.previous.greeting + ' → ' + j.sapaan + ' (data lama ditimpa)'
+              : 'Tersimpan di Lelang Monitor ✓ (' + j.username + ', ongkir ' + fmt(j.ongkir) + 'rb, ' + j.sapaan + ')';
           } catch (e) {
             $('saved').textContent = 'Tidak bisa terhubung ke server: ' + e.message;
           } finally {
