@@ -48,6 +48,25 @@ Aturan:
 
 4. Buka link Vercel-nya di HP, simpan ke Home Screen.
 
+### Simpan pelanggan ke Lelang Monitor (opsional)
+
+Setelah ongkir dihitung, pelanggan bisa langsung disimpan ke dashboard Lelang Monitor sebagai *pelanggan lama*
+(username, ongkir, sapaan), sehingga rekap total di sana memakai ongkir yang sama dan tidak diketik ulang.
+
+1. Di Lelang Monitor, isi variabel `CUSTOMER_API_TOKEN` dengan kunci rahasia yang panjang dan acak.
+2. Di proyek ini (Vercel), tambahkan:
+
+| Variabel | Keterangan |
+|---|---|
+| `MONITOR_URL` | Alamat dashboard, mis. `https://nama-dashboard.vercel.app` |
+| `MONITOR_TOKEN` | Sama persis dengan `CUSTOMER_API_TOKEN` di dashboard |
+
+3. Isi kolom **Username Instagram** sebelum menekan *Buat balasan*, lalu tekan tombol **Simpan ... ke Lelang Monitor**
+   yang muncul di bawah hasil. Pemanggilannya dari server ke server (`/api/pelanggan`), jadi token tidak pernah sampai
+   ke browser, dan memakai PIN yang sama dengan pengecekan ongkir.
+
+Ongkir desimal tetap bekerja: `18.5` menjadi 18,5rb di dashboard.
+
 ### Jalan di komputer sendiri
 
 ```bash

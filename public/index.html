@@ -61,6 +61,10 @@
       Lebih dari 1 barang: <code>Tebet, 350 200, ka</code> (harga dalam ribuan)<br>
       Ongkir sudah tahu: <code>10, 350 200, ka</code> (angka pertama = ongkir)
     </div>
+    <div style="margin-top:10px">
+      <label for="user">Username Instagram (opsional, untuk menyimpan ke Lelang Monitor)</label>
+      <input id="user" placeholder="@budi.watch" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
     <div class="row"><button id="go">Buat balasan</button></div>
     <div id="pinWrap" class="hidden" style="margin-top:10px">
       <label for="pin">PIN akses</label>
@@ -128,10 +132,30 @@
       show(`<div class="reply" id="reply">${esc(data.reply)}</div>
         <div class="row"><button id="copyBtn">Salin</button></div>
         <div class="copied" id="copied"></div>
+        ${$('user').value.trim() ? '<div class="row"><button id="saveBtn" class="secondary">Simpan @' + esc($('user').value.trim().replace(/^@/, '')) + ' ke Lelang Monitor</button></div><div class="copied" id="saved"></div>' : ''}
         <div class="detail">${esc(d.tujuan || '')}<br>${esc(d.layanan)}${d.berat ? ' · ' + esc(d.berat) : ''} · Rp${Number(d.ongkir).toLocaleString('id-ID')}${d.etd ? ' · estimasi ' + esc(d.etd) : ''}</div>`);
       const doCopy = async () => { $('copied').textContent = (await copy(data.reply)) ? 'Tersalin ✓' : 'Gagal menyalin, salin manual ya.'; };
       $('copyBtn').addEventListener('click', doCopy);
       doCopy();
+      if ($('saveBtn')) {
+        $('saveBtn').addEventListener('click', async () => {
+          $('saveBtn').disabled = true;
+          $('saved').textContent = 'Menyimpan…';
+          try {
+            const r = await fetch('/api/pelanggan', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: $('user').value, ongkir: d.ongkir, sapaan: d.sapaan, pin: $('pin').value.trim() }),
+            });
+            const j = await r.json().catch(() => ({}));
+            $('saved').textContent = r.ok ? 'Tersimpan di Lelang Monitor ✓ (' + j.username + ', ongkir ' + j.ongkir + 'rb, ' + j.sapaan + ')' : (j.error || 'Gagal menyimpan.');
+          } catch (e) {
+            $('saved').textContent = 'Tidak bisa terhubung ke server: ' + e.message;
+          } finally {
+            $('saveBtn').disabled = false;
+          }
+        });
+      }
     } catch (e) {
       show('Tidak bisa terhubung ke server: ' + esc(e.message), true);
     } finally {

@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { handleOngkir } from './lib/handler.js';
+import { saveCustomer } from './lib/monitor.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,20 @@ const server = http.createServer(async (req, res) => {
       /* body kosong */
     }
     const { status, json } = await handleOngkir(body, process.env);
+    res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(json));
+    return;
+  }
+  if (req.url === '/api/pelanggan' && req.method === 'POST') {
+    let raw = '';
+    for await (const chunk of req) raw += chunk;
+    let body = {};
+    try {
+      body = JSON.parse(raw || '{}');
+    } catch {
+      /* body kosong */
+    }
+    const { status, json } = await saveCustomer(body, process.env);
     res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(json));
     return;
