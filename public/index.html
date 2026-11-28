@@ -114,7 +114,7 @@
       const j = await res.json().catch(() => ({}));
       if (j.exists && j.customer) {
         const g = j.customer.greeting === 'ka' ? 'kaa' : j.customer.greeting;
-        note.textContent = '⚠ @' + j.username + ' sudah ada di database pemenang lama: ongkir ' + String(j.customer.ongkir).replace('.', ',') + 'rb, sapaan ' + g + '. Kalau kamu simpan dengan data baru, kamu akan ditanya dulu sebelum menimpa.';
+        note.textContent = '⚠ @' + j.username + ' sudah ada di database pemenang lama: ongkir ' + (j.customer.ongkir == null ? 'belum diisi' : String(j.customer.ongkir).replace('.', ',') + 'rb') + ', sapaan ' + g + '. Kalau kamu simpan dengan data baru, kamu akan ditanya dulu sebelum menimpa.';
         note.classList.remove('hidden');
       } else {
         note.classList.add('hidden');
@@ -189,7 +189,7 @@
             const j = await r.json().catch(() => ({}));
             if (r.status === 409 && j.exists) {
               // Akunnya sudah ada di dashboard: tanya dulu, jangan menimpa diam-diam.
-              say('@' + j.username + ' sudah ada di Lelang Monitor (ongkir ' + fmt(j.previous.ongkir) + 'rb, sapaan ' + j.previous.greeting + '). Timpa dengan ongkir ' + fmt(j.ongkir) + 'rb, sapaan ' + j.sapaan + '?', [
+              say('@' + j.username + ' sudah ada di Lelang Monitor (ongkir ' + (j.previous.ongkir == null ? 'belum diisi' : fmt(j.previous.ongkir) + 'rb') + ', sapaan ' + j.previous.greeting + '). Timpa dengan ongkir ' + fmt(j.ongkir) + 'rb, sapaan ' + j.sapaan + '?', [
                 ['Timpa data lama', () => save(true)],
                 ['Batal, biarkan data lama', () => say('Dibatalkan. Data lama di Lelang Monitor tidak diubah.')],
               ]);
@@ -197,7 +197,7 @@
             }
             if (!r.ok) return say(j.error || 'Gagal menyimpan.');
             say(j.updated
-              ? 'Diperbarui ✓ ' + j.username + ': ongkir ' + fmt(j.previous.ongkir) + 'rb → ' + fmt(j.ongkir) + 'rb, sapaan ' + j.previous.greeting + ' → ' + j.sapaan
+              ? 'Diperbarui ✓ ' + j.username + ': ongkir ' + (j.previous.ongkir == null ? 'belum diisi' : fmt(j.previous.ongkir) + 'rb') + ' → ' + fmt(j.ongkir) + 'rb, sapaan ' + j.previous.greeting + ' → ' + j.sapaan
               : 'Tersimpan di Lelang Monitor ✓ (' + j.username + ', ongkir ' + fmt(j.ongkir) + 'rb, ' + j.sapaan + ')');
           } catch (e) {
             say('Tidak bisa terhubung ke server: ' + e.message);
